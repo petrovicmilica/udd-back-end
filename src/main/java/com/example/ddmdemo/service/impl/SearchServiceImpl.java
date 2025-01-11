@@ -146,11 +146,11 @@ public class SearchServiceImpl implements SearchService {
                 // Range query - not applicable for dummy index, searches in the range from-to
 
                 // More Like This query - finds documents similar to the provided text
-                b.should(sb -> sb.moreLikeThis(mlt -> mlt
-                    .fields("title")
-                    .like(like -> like.text(token))
-                    .minTermFreq(1)
-                    .minDocFreq(1)));
+//                b.should(sb -> sb.moreLikeThis(mlt -> mlt
+//                    .fields("title")
+//                    .like(like -> like.text(token))
+//                    .minTermFreq(1)
+//                    .minDocFreq(1)));
             });
             return b;
         })))._toQuery();
