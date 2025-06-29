@@ -27,7 +27,7 @@ public class FileController {
     @GetMapping("/{filename}")
     @ResponseBody
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) throws IOException {
-        log.info("STATISTIC-LOG serveFile -> " + filename);
+        log.info("STATISTIC-LOG serveFile -> {}", filename);
 
         var minioResponse = fileService.loadAsResource(filename);
         return ResponseEntity.ok()

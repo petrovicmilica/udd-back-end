@@ -29,9 +29,9 @@ public class DummyTable {
     @Column(name = "server_filename")
     private String serverFilename;
 
-    @Column(name = "title")
+    @Column(name = "title", length = 2000)
     private String title;
 
-    @Column(name = "content")
+    @Column(name = "content", length = 30000)
     private String content;
 }
