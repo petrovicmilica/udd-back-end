@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+/*@RestController
 @RequestMapping("/api/index")
 @RequiredArgsConstructor
 public class IndexController {
@@ -26,3 +26,4 @@ public class IndexController {
         return new DummyDocumentFileResponseDTO(serverFilename);
     }
 }
+*/

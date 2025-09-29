@@ -1,14 +1,15 @@
 package com.example.ddmdemo.configuration;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.elasticsearch.client.ClientConfiguration;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 
 @Configuration
-@EnableElasticsearchRepositories(basePackages = "com.example.ddmdemo.indexrepository")
-public class ElasticsearchConfiguration
-    extends org.springframework.data.elasticsearch.client.elc.ElasticsearchConfiguration {
+@EnableElasticsearchRepositories(basePackages = "com.example.ddmdemo.repositoryIndex")
+@ComponentScan(basePackages = "com.example.ddmdemo")
+public class ElasticsearchConfiguration extends org.springframework.data.elasticsearch.client.elc.ElasticsearchConfiguration {
 
     @Value("${elasticsearch.host}")
     private String host;
@@ -25,6 +26,6 @@ public class ElasticsearchConfiguration
     @Override
     public ClientConfiguration clientConfiguration() {
         return ClientConfiguration.builder().connectedTo(host + ":" + port)
-            .withBasicAuth(userName, password).build();
+                .withBasicAuth(userName, password).build();
     }
 }

@@ -4,7 +4,7 @@ import ai.djl.translate.TranslateException;
 import com.example.ddmdemo.exceptionhandling.exception.LoadingException;
 import com.example.ddmdemo.exceptionhandling.exception.StorageException;
 import com.example.ddmdemo.indexmodel.DummyIndex;
-import com.example.ddmdemo.indexrepository.DummyIndexRepository;
+//import com.example.ddmdemo.indexrepository.DummyIndexRepository;
 import com.example.ddmdemo.model.DummyTable;
 import com.example.ddmdemo.respository.DummyRepository;
 import com.example.ddmdemo.service.interfaces.FileService;
@@ -24,7 +24,7 @@ import org.apache.tika.Tika;
 import org.apache.tika.language.detect.LanguageDetector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
+/*
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -119,4 +119,4 @@ public class IndexingServiceImpl implements IndexingService {
 
         return trueMimeType;
     }
-}
+}*/

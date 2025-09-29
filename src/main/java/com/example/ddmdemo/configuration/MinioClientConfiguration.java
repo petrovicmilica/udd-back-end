@@ -20,6 +20,6 @@ public class MinioClientConfiguration {
     @Bean
     public MinioClient minioClient() {
         return MinioClient.builder().endpoint(minioHost).credentials(minioAccessKey, minioSecretKey)
-            .build();
+                .build();
     }
 }

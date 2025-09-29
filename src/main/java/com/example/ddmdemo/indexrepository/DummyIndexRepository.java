@@ -5,7 +5,8 @@ import org.springframework.data.elasticsearch.annotations.Query;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository
+/*@Repository
 public interface DummyIndexRepository
     extends ElasticsearchRepository<DummyIndex, String> {
 }
+*/
