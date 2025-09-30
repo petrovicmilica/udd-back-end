@@ -7,19 +7,19 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.elasticsearch.annotations.*;
 
-@Document(indexName = "incident_report_index")
+@Document(indexName = "security_incident_report_index")
 @Setting(settingPath = "configuration/serbian-analyzer-config.json")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class IncidentReportIndex {
+public class SecurityIncidentReportIndex {
     @Id
     private String id;
 
     @MultiField(
             mainField = @Field(
-                    name = "employee_full_name",
+                    name = "employee_name",
                     type = FieldType.Text,
                     store = true,
                     analyzer = "serbian_simple",
@@ -32,14 +32,14 @@ public class IncidentReportIndex {
                     )
             }
     )
-    private String employeeFullName;
+    private String employeeName;
 
     @Field(type = FieldType.Text, store = true, name = "security_organization_name", analyzer = "serbian_simple", searchAnalyzer = "serbian_simple")
     private String securityOrganizationName;
 
     @MultiField(
             mainField = @Field(
-                    name = "attacked_organization_name",
+                    name = "affected_organization_name",
                     type = FieldType.Text,
                     store = true,
                     analyzer = "serbian_simple",
@@ -52,7 +52,7 @@ public class IncidentReportIndex {
                     )
             }
     )
-    private String attackedOrganizationName;
+    private String affectedOrganizationName;
 
     @Field(type = FieldType.Keyword, store = true, name = "severity")
     private String severity;

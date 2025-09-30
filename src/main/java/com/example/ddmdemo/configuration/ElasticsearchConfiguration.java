@@ -7,7 +7,7 @@ import org.springframework.data.elasticsearch.client.ClientConfiguration;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 
 @Configuration
-@EnableElasticsearchRepositories(basePackages = "com.example.ddmdemo.repositoryIndex")
+@EnableElasticsearchRepositories(basePackages = "com.example.ddmdemo.indexrepository")
 @ComponentScan(basePackages = "com.example.ddmdemo")
 public class ElasticsearchConfiguration extends org.springframework.data.elasticsearch.client.elc.ElasticsearchConfiguration {
 

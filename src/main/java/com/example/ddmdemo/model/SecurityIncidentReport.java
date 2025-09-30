@@ -4,6 +4,8 @@ import com.example.ddmdemo.model.enums.SeverityLevel;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "security_incident_reports")
 @Getter
@@ -12,7 +14,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class SecurityIncidentReport {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,6 +34,17 @@ public class SecurityIncidentReport {
     @Column(nullable = false)
     private String affectedOrganizationAddress;
 
-    @Lob
+    @Column(nullable = true)
     private String reportContent;
+
+    @Column(nullable = false)
+    private String filePath;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 }

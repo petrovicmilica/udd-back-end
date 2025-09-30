@@ -1,5 +1,6 @@
 package com.example.ddmdemo.controller;
 
+import com.example.ddmdemo.dto.SecurityIncidentReportRequest;
 import com.example.ddmdemo.dto.SecurityIncidentReportResponse;
 import com.example.ddmdemo.service.interfaces.SecurityIncidentReportService;
 import lombok.RequiredArgsConstructor;
@@ -28,5 +29,16 @@ public class SecurityIncidentReportController {
         LOGGER.info("Security incident report file parsed successfully");
         LOGGER.info("Report data: {}", reportResponse);
         return ResponseEntity.ok(reportResponse);
+    }
+
+    @PostMapping(value = "/upload/confirm", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<SecurityIncidentReportResponse> confirmUpload(
+            @RequestPart("file") MultipartFile file,
+            @RequestPart("metadata") SecurityIncidentReportRequest metadata
+    ) {
+        LOGGER.info("Confirming upload for incident report...");
+        LOGGER.info("Security incident report to upload: {}", metadata);
+        SecurityIncidentReportResponse response = securityIncidentReportService.confirmAndSave(file, metadata);
+        return ResponseEntity.ok(response);
     }
 }
