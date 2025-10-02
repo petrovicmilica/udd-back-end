@@ -69,6 +69,6 @@ public class SecurityIncidentReportIndex {
     @Field(type = FieldType.Keyword, store = true)
     private String city;
 
-    // @Field(type = FieldType.Object)
-    // private VectorizedContent vectorizedContent;
+    @Field(type = FieldType.Dense_Vector, dims = 384, similarity = "cosine")
+    private float[] vectorizedContent;
 }

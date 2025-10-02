@@ -24,3 +24,29 @@
 
 [2025-10-02T19:33:59.044791500] SecurityIncidentReport saved: id=14, employee=Ivana Jukić, securityOrg=CyberSec Solutions, affectedOrg=Synechron, severity=MEDIUM, address=Sutjeska 15, city=Bačka Palanka, content=Tokom rutinske kontrole mreže otkriven je pokušaj neovlašćenog pristupa IT, file=incident-reports/f9774a83-d888-4850-8684-db054d571abc.pdf
 
+[2025-10-03T00:46:12.965776300] SecurityIncidentReport saved: id=16, employee=Milica Petrović, securityOrg=Cybersecurity Dept., affectedOrg=IT services, severity=MEDIUM, address=Bulevar Oslobođenja 18, city=Novi Sad, content=A malware attack was detected on the IT services network., file=incident-reports/1eca4c2c-6649-4b75-9202-bbe68f034e84.pdf
+
+[2025-10-03T00:46:12.965776300] SecurityIncidentReport saved: id=15, employee=Milica Petrović, securityOrg=Cybersecurity Dept., affectedOrg=IT services, severity=MEDIUM, address=Bulevar Oslobođenja 18, city=Novi Sad, content=A malware attack was detected on the IT services network., file=incident-reports/46d97b01-8454-443e-8f98-f0c1ed8bc1de.pdf
+
+[2025-10-03T01:37:27.066366100] SecurityIncidentReport saved: id=17, employee=Milica Petrović, securityOrg=CyberSec Solutions, affectedOrg=Synechron, severity=LOW, address=Bulevar Oslobođenja 18, city=Novi Sad, content=Tokom rutinske kontrole mreže otkriven je pokušaj neovlašćenog pristupa IT, file=incident-reports/62789ba0-ac64-40e0-ab6a-479b8676604c.pdf
+
+[2025-10-03T01:40:53.048883500] SecurityIncidentReport saved: id=18, employee=Ivana Petrović, securityOrg=CyberSec Solutions, affectedOrg=Synechron, severity=HIGH, address=Bulevar Oslobođenja 18, city=Novi Sad, content=Tokom rutinske kontrole mreže otkriven je pokušaj neovlašćenog pristupa IT, file=incident-reports/f0b4cb71-ebf3-4053-892a-d6d41300b5b7.pdf
+
+[2025-10-03T01:41:04.296544600] SecurityIncidentReport saved: id=19, employee=Marko Petrović, securityOrg=InfoGuard, affectedOrg=TechNova, severity=MEDIUM, address=Kralja Petra 12, city=Beograd, content=Otkriven je pokušaj phishing napada na zaposlenog koji je doveo do privremenog, file=incident-reports/e3d1446a-f45d-46c9-833c-41eac7facb0d.pdf
+
+[2025-10-03T01:41:15.759531] SecurityIncidentReport saved: id=20, employee=Ana Jovanović, securityOrg=CyberSec Solutions, affectedOrg=Synechron, severity=LOW, address=Temerinska 23, city=Novi Sad, content=Tokom rutinske kontrole mreže otkriven je pokušaj neovlašćenog pristupa IT, file=incident-reports/00b7d99e-ebf5-4f67-a19c-9cfe1e881710.pdf
+
+[2025-10-03T01:42:09.649023400] SecurityIncidentReport saved: id=22, employee=Jelena Petrović, securityOrg=InfoGuard, affectedOrg=DataSecure, severity=MEDIUM, address=Bulevar Mihajla Pupina 18, city=Beograd, content=Neovlašćeni pokušaj pristupa serverima je detektovan i odmah blokiran. Sistem je, file=incident-reports/66eeb284-e9f3-407d-b602-b43a68590974.pdf
+
+[2025-10-03T01:42:21.580056400] SecurityIncidentReport saved: id=23, employee=Stefan Ilić, securityOrg=CyberSec Solutions, affectedOrg=NovaTech, severity=LOW, address=Futoška 34, city=Novi Sad, content=Pokušaj neautorizovanog pristupa sistemima organizacije je otkriven i odmah, file=incident-reports/584c715a-4647-4ef1-bcfd-59a1b31cd1ac.pdf
+
+[2025-10-03T01:42:33.137523600] SecurityIncidentReport saved: id=24, employee=Milan Kostić, securityOrg=InfoGuard, affectedOrg=SoftTech, severity=HIGH, address=Njegoševa 15, city=Beograd, content=Napad ransomware-om je otkriven na serverima. Tim za bezbednost je izolovao, file=incident-reports/fdb9d65e-7b72-494b-a479-06145e343e1e.pdf
+
+[2025-10-03T01:42:45.157857200] SecurityIncidentReport saved: id=25, employee=Nikola Jukić, securityOrg=CyberSec Solutions, affectedOrg=Synechron, severity=MEDIUM, address=Bulevar cara Lazara 56, city=Novi Sad, content=Pokušaj pristupa kritičnim serverima je odmah otkriven. Incident je prijavljen i, file=incident-reports/308ad651-173c-4cae-af0a-96371199d3f9.pdf
+
+[2025-10-03T01:52:04.822212900] SecurityIncidentReport saved: id=26, employee=Mila Vojinović, securityOrg=CyberSec Solutions, affectedOrg=Madatech, severity=MEDIUM, address=Maksima Gorkog 12, city=Subotica, content=Pristup mreži je neovlašćeno pokušao korisnik spolja. Incident je odmah neutralisan, file=incident-reports/47439255-e40f-4036-93fb-a6b581096900.pdf
+
+[2025-10-03T01:52:14.342255900] SecurityIncidentReport saved: id=27, employee=Aleksandra Petrov, securityOrg=CyberSec Solutions, affectedOrg=Elanwave, severity=MEDIUM, address=Cara Dušana 14, city=Vranje, content=Pristup mreži je neovlašćeno pokušao korisnik spolja. Incident je odmah neutralisan, file=incident-reports/318bc553-fc0c-483e-812e-2ed8aaa1a274.pdf
+
+[2025-10-03T01:54:11.801847200] SecurityIncidentReport saved: id=28, employee=Aleksandra Petrov, securityOrg=CyberSec Solutions, affectedOrg=Elanwave, severity=MEDIUM, address=Nikole Pašića 7, city=Vranje, content=Pristup mreži je neovlašćeno pokušao korisnik spolja. Incident je odmah neutralisan, file=incident-reports/de439933-781f-4af7-9c9e-04361a35c25f.pdf
+

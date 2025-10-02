@@ -10,6 +10,7 @@ import com.example.ddmdemo.modelIndex.SecurityIncidentReportIndex;
 import com.example.ddmdemo.respository.SecurityIncidentReportRepository;
 import com.example.ddmdemo.service.interfaces.GeocodingService;
 import com.example.ddmdemo.service.interfaces.SecurityIncidentReportService;
+import com.example.ddmdemo.util.VectorizationUtil;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import jakarta.transaction.Transactional;
@@ -46,7 +47,7 @@ public class SecurityIncidentReportServiceImpl implements SecurityIncidentReport
             String employeeName = extractField(text, "Employee:");
             String securityOrg = extractField(text, "Security Org:");
             String affectedOrg = extractField(text, "Affected Org:");
-            SeverityLevel severity = extractSeverity(text);
+            SeverityLevel severity = extractSeverity(text, "Severity:");
             String affectedAddress = extractField(text, "Address:");
             String reportContent = extractField(text, "Report Content:");
 
@@ -97,6 +98,14 @@ public class SecurityIncidentReportServiceImpl implements SecurityIncidentReport
             String geoPoint = coords[0] + "," + coords[1];
             System.out.println("Geolokacija indeksa: " + coords[0] + ", " + coords[1]);
             index.setLocation(geoPoint);
+            String address = saved.getAffectedOrganizationAddress();
+            String city = address;
+            if (address != null && address.contains(",")) {
+                String[] parts = address.split(",");
+                city = parts[parts.length - 1].trim();
+            }
+            index.setCity(city);
+            index.setVectorizedContent(getVectorizedContent(saved));
 
             securityIncidentReportIndexRepository.save(index);
 
@@ -113,6 +122,38 @@ public class SecurityIncidentReportServiceImpl implements SecurityIncidentReport
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to confirm upload", e);
+        }
+    }
+
+    private float[] getVectorizedContent(SecurityIncidentReport entity) {
+        StringBuilder fullText = new StringBuilder();
+
+        if (entity.getEmployeeName() != null) {
+            fullText.append(entity.getEmployeeName()).append(" ");
+        }
+        if (entity.getSecurityOrganizationName() != null) {
+            fullText.append(entity.getSecurityOrganizationName()).append(" ");
+        }
+        if (entity.getAffectedOrganizationName() != null) {
+            fullText.append(entity.getAffectedOrganizationName()).append(" ");
+        }
+        if (entity.getSeverityLevel() != null) {
+            fullText.append(entity.getSeverityLevel()).append(" ");
+        }
+        if (entity.getReportContent() != null) {
+            fullText.append(entity.getReportContent()).append(" ");
+        }
+        if (entity.getAffectedOrganizationAddress() != null) {
+            fullText.append(entity.getAffectedOrganizationAddress()).append(" ");
+        }
+
+        String textForEmbedding = fullText.toString().trim();
+
+        float[] vectorizedContent;
+        try {
+            return vectorizedContent = VectorizationUtil.getEmbedding(textForEmbedding);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to vectorize content", e);
         }
     }
 
@@ -163,11 +204,12 @@ public class SecurityIncidentReportServiceImpl implements SecurityIncidentReport
         return "";
     }
 
-    private SeverityLevel extractSeverity(String text) {
-        if (text.contains("Low")) return SeverityLevel.LOW;
-        if (text.contains("Medium")) return SeverityLevel.MEDIUM;
-        if (text.contains("High")) return SeverityLevel.HIGH;
-        if (text.contains("Critical")) return SeverityLevel.CRITICAL;
+    private SeverityLevel extractSeverity(String text, String fieldName) {
+        String severityValue = extractField(text, fieldName);
+        if (severityValue.contains("Low")) return SeverityLevel.LOW;
+        if (severityValue.contains("Medium")) return SeverityLevel.MEDIUM;
+        if (severityValue.contains("High")) return SeverityLevel.HIGH;
+        if (severityValue.contains("Critical")) return SeverityLevel.CRITICAL;
         return SeverityLevel.MEDIUM;
     }
 }

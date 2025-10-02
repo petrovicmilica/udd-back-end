@@ -1,6 +1,7 @@
 package com.example.ddmdemo.service.impl;
 
-import co.elastic.clients.elasticsearch._types.GeoLocation;
+import co.elastic.clients.elasticsearch._types.KnnQuery;
+import com.example.ddmdemo.util.VectorizationUtil;
 import com.example.ddmdemo.dto.DocumentSearchRequest;
 import com.example.ddmdemo.dto.SecurityIncidentReportResponse;
 import com.example.ddmdemo.model.SecurityIncidentReport;
@@ -9,6 +10,7 @@ import com.example.ddmdemo.modelIndex.SecurityIncidentReportIndex;
 import com.example.ddmdemo.respository.SecurityIncidentReportRepository;
 import com.example.ddmdemo.service.interfaces.DocumentSearchService;
 import com.example.ddmdemo.service.interfaces.GeocodingService;
+import joptsimple.internal.Strings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -20,6 +22,10 @@ import org.springframework.data.elasticsearch.core.query.highlight.Highlight;
 import org.springframework.data.elasticsearch.core.query.highlight.HighlightField;
 import org.springframework.data.elasticsearch.core.query.highlight.HighlightParameters;
 import org.springframework.stereotype.Service;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
+
+import java.util.Optional;
+import java.util.UUID;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -74,6 +80,9 @@ public class DocumentSearchServiceImpl implements DocumentSearchService {
         if ("geolocation".equals(searchType)) {
             return geoSearch(keywords.searchKeywords(), keywords.radius() != null ? keywords.radius() : 0);
         }
+        if ("knn".equals(searchType)) {
+            return knnSearch(keywords.searchKeywords());
+        }
         List<HighlightField> highlightFields = new ArrayList<>();
 
         highlightFields.add(new HighlightField("employee_name"));
@@ -94,6 +103,62 @@ public class DocumentSearchServiceImpl implements DocumentSearchService {
 
         return runQuery(searchQueryBuilder.build());
     }
+
+    public List<SecurityIncidentReportResponse> knnSearch(List<String> keywords) {
+        try {
+            String text = Strings.join(keywords, " ");
+
+            float[] embedding = VectorizationUtil.getEmbedding(text);
+
+            List<Float> vectorList = new ArrayList<>();
+            for (float f : embedding) {
+                vectorList.add(f);
+            }
+
+            KnnQuery knnQuery = new KnnQuery.Builder()
+                    .field("vectorizedContent")
+                    .queryVector(vectorList)
+                    .numCandidates(100)
+                    .k(10)
+                    .boost(10.0f)
+                    .build();
+
+            NativeQuery searchQuery = NativeQuery.builder()
+                    .withKnnQuery(knnQuery)
+                    .withMaxResults(5)
+                    .withSearchType(null)
+                    .build();
+
+            var searchHits = elasticsearchOperations.search(searchQuery, SecurityIncidentReportIndex.class);
+
+            List<SecurityIncidentReportResponse> dtos = new ArrayList<>();
+            for (var hit : searchHits) {
+                SecurityIncidentReportIndex entity = hit.getContent();
+                Optional<SecurityIncidentReport> incidentOpt = securityIncidentReportRepository.findById(Integer.valueOf(entity.getDatabaseId()));
+                if (incidentOpt.isPresent()) {
+                    SecurityIncidentReport incident = incidentOpt.get();
+
+                    SecurityIncidentReportResponse dto = SecurityIncidentReportResponse.builder()
+                            .withEmployeeName(entity.getEmployeeName())
+                            .withSecurityOrganizationName(entity.getSecurityOrganizationName())
+                            .withAffectedOrganizationName(entity.getAffectedOrganizationName())
+                            .withSeverityLevel(SeverityLevel.valueOf(entity.getSeverity()))
+                            .withAffectedOrganizationAddress(incident.getAffectedOrganizationAddress())
+                            .withReportContent(entity.getContent())
+                            .build();
+
+                    dtos.add(dto);
+                }
+            }
+
+            return dtos;
+
+        } catch (Exception e) {
+            log.error("KNN search failed", e);
+            return List.of();
+        }
+    }
+
 
     private Query buildSimpleSearchQuery(List<String> tokens, String booleanQuery, Integer radius, String typeOfSearch){
         String trimmed = booleanQuery != null ? booleanQuery.trim() : "";
