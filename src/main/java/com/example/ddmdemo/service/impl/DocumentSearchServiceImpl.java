@@ -35,6 +35,25 @@ public class DocumentSearchServiceImpl implements DocumentSearchService {
     private final ElasticsearchOperations elasticsearchOperations;
     private final SecurityIncidentReportRepository securityIncidentReportRepository;
 
+    private static final Set<String> KEYWORD_FIELDS = Set.of(
+            "severity"
+    );
+
+    private static final List<String> TEXT_FIELDS = List.of(
+            "employee_name",
+            "security_organization_name",
+            "affected_organization_name",
+            "content"
+    );
+
+    private static final List<String> SEARCH_FIELDS = List.of(
+            "employee_full_name^2",
+            "security_organization_name",
+            "affected_organization_name",
+            "content",
+            "severity"
+    );
+
     @Override
     public List<SecurityIncidentReportResponse> search(DocumentSearchRequest keywords, String searchType) {
         List<HighlightField> highlightFields = new ArrayList<>();
@@ -52,13 +71,16 @@ public class DocumentSearchServiceImpl implements DocumentSearchService {
                 .build();
 
         NativeQueryBuilder searchQueryBuilder = new NativeQueryBuilder()
-                .withQuery(buildSimpleSearchQuery(keywords.searchKeywords(), searchType))
+                .withQuery(buildSimpleSearchQuery(keywords.searchKeywords(), keywords.booleanQuery(), searchType))
                 .withHighlightQuery(new HighlightQuery(new Highlight(params, highlightFields), SecurityIncidentReportIndex.class));
 
         return runQuery(searchQueryBuilder.build());
     }
 
-    private Query buildSimpleSearchQuery(List<String> tokens, String typeOfSearch){
+    private Query buildSimpleSearchQuery(List<String> tokens, String booleanQuery, String typeOfSearch){
+        String trimmed = booleanQuery != null ? booleanQuery.trim() : "";
+        boolean hasRaw = !trimmed.isBlank();
+        boolean hasTokens = tokens != null && !tokens.isEmpty();
         switch(typeOfSearch){
             case "simple":
                 return BoolQuery.of(q -> q.should(mb -> mb.bool(b -> {
@@ -72,6 +94,15 @@ public class DocumentSearchServiceImpl implements DocumentSearchService {
                             return b;
                         })
                 ))._toQuery();
+            case "boolean":
+                if (!hasRaw && !hasTokens) {
+                    return QueryBuilders.matchAll(m -> m);
+                }
+                String raw = hasRaw ? trimmed : String.join(" ", tokens);
+
+                BooleanQueryParser dsl = new BooleanQueryParser(KEYWORD_FIELDS, TEXT_FIELDS, SEARCH_FIELDS);
+
+                return dsl.parseToQuery(raw);
             default:
                 return null;
         }

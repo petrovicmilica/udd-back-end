@@ -16,3 +16,7 @@
 
 [2025-09-30T22:31:43.919953300] SecurityIncidentReport saved: id=9, employee=Milica Petrović, securityOrg=Cybersecurity Dept., affectedOrg=IT services, severity=MEDIUM, address=Bulevar Oslobođenja 18, city=Novi Sad, content=A malware attack was detected on the IT services network., file=incident-reports/452a79c6-f6aa-4c03-9e2c-8af0add05241.pdf
 
+[2025-10-02T15:10:01.410295300] SecurityIncidentReport saved: id=10, employee=Milica Petrović, securityOrg=Cybersecurity Dept., affectedOrg=IT services, severity=MEDIUM, address=Bulevar Oslobođenja 18, city=Novi Sad, content=A malware attack was detected on the IT services network., file=incident-reports/98134894-600c-4131-94c8-0b108ffe50ea.pdf
+
+[2025-10-02T15:55:53.343484300] SecurityIncidentReport saved: id=11, employee=Ivana Jukić, securityOrg=CyberSec Solutions, affectedOrg=Synechron, severity=MEDIUM, address=Sutjeska 15, city=Bačka Palanka, content=Tokom rutinske kontrole mreže otkriven je pokušaj neovlašćenog pristupa IT, file=incident-reports/96e7c8d8-5e29-42d8-933a-bed70b7f498a.pdf
+
