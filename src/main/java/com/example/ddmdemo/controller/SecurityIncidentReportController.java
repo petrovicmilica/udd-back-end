@@ -1,18 +1,19 @@
 package com.example.ddmdemo.controller;
 
+import com.example.ddmdemo.dto.DocumentSearchRequest;
 import com.example.ddmdemo.dto.SecurityIncidentReportRequest;
 import com.example.ddmdemo.dto.SecurityIncidentReportResponse;
+import com.example.ddmdemo.service.interfaces.DocumentSearchService;
 import com.example.ddmdemo.service.interfaces.SecurityIncidentReportService;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/security-incident-report")
@@ -20,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class SecurityIncidentReportController {
     private static final Logger LOGGER = LogManager.getLogger(SecurityIncidentReportController.class);
     private final SecurityIncidentReportService securityIncidentReportService;
+    private final DocumentSearchService documentSearchService;
 
     @PostMapping(value = "/parse", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SecurityIncidentReportResponse> parseDocument(
@@ -40,5 +42,13 @@ public class SecurityIncidentReportController {
         LOGGER.info("Security incident report to upload: {}", metadata);
         SecurityIncidentReportResponse response = securityIncidentReportService.confirmAndSave(file, metadata);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/search/{searchType}")
+    public ResponseEntity<List<SecurityIncidentReportResponse>> search(@RequestBody DocumentSearchRequest keywords, @PathVariable(name = "searchType") String searchType) {
+        LOGGER.info("Received request to search documents with keywords {} and type {}", keywords, searchType);
+        List<SecurityIncidentReportResponse> responses = documentSearchService.search(keywords, searchType);
+        LOGGER.info("Responses: {}", responses);
+        return ResponseEntity.ok(responses);
     }
 }
