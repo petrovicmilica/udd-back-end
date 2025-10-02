@@ -4,13 +4,15 @@ import java.util.List;
 
 public record DocumentSearchRequest(
         List<String> searchKeywords,
-        String booleanQuery
+        String booleanQuery,
+        Integer radius
 ) {
     public static Builder builder() { return new Builder(); }
 
     public static final class Builder {
         private List<String> searchKeywords;
         private String booleanQuery;
+        private Integer radius;
 
         public Builder withSearchKeywords(List<String> searchKeywords) {
             this.searchKeywords = searchKeywords;
@@ -22,6 +24,11 @@ public record DocumentSearchRequest(
             return this;
         }
 
-        public DocumentSearchRequest build() { return new DocumentSearchRequest(searchKeywords, booleanQuery); }
+        public Builder withRadius(Integer radius) {
+            this.radius = radius;
+            return this;
+        }
+
+        public DocumentSearchRequest build() { return new DocumentSearchRequest(searchKeywords, booleanQuery, radius); }
     }
 }

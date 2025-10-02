@@ -1,5 +1,6 @@
 package com.example.ddmdemo.service.impl;
 
+import co.elastic.clients.elasticsearch._types.GeoLocation;
 import com.example.ddmdemo.dto.DocumentSearchRequest;
 import com.example.ddmdemo.dto.SecurityIncidentReportResponse;
 import com.example.ddmdemo.model.SecurityIncidentReport;
@@ -7,8 +8,10 @@ import com.example.ddmdemo.model.enums.SeverityLevel;
 import com.example.ddmdemo.modelIndex.SecurityIncidentReportIndex;
 import com.example.ddmdemo.respository.SecurityIncidentReportRepository;
 import com.example.ddmdemo.service.interfaces.DocumentSearchService;
+import com.example.ddmdemo.service.interfaces.GeocodingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
@@ -18,11 +21,17 @@ import org.springframework.data.elasticsearch.core.query.highlight.HighlightFiel
 import org.springframework.data.elasticsearch.core.query.highlight.HighlightParameters;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.*;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +43,12 @@ import java.util.Optional;
 public class DocumentSearchServiceImpl implements DocumentSearchService {
     private final ElasticsearchOperations elasticsearchOperations;
     private final SecurityIncidentReportRepository securityIncidentReportRepository;
+    private final GeocodingService geocodingService;
+
+    @Value("${ors.api.key}")
+    private String orsApiKey;
+
+    private static final String ORS_PROFILE = "foot-walking";
 
     private static final Set<String> KEYWORD_FIELDS = Set.of(
             "severity"
@@ -56,6 +71,9 @@ public class DocumentSearchServiceImpl implements DocumentSearchService {
 
     @Override
     public List<SecurityIncidentReportResponse> search(DocumentSearchRequest keywords, String searchType) {
+        if ("geolocation".equals(searchType)) {
+            return geoSearch(keywords.searchKeywords(), keywords.radius() != null ? keywords.radius() : 0);
+        }
         List<HighlightField> highlightFields = new ArrayList<>();
 
         highlightFields.add(new HighlightField("employee_name"));
@@ -71,13 +89,13 @@ public class DocumentSearchServiceImpl implements DocumentSearchService {
                 .build();
 
         NativeQueryBuilder searchQueryBuilder = new NativeQueryBuilder()
-                .withQuery(buildSimpleSearchQuery(keywords.searchKeywords(), keywords.booleanQuery(), searchType))
+                .withQuery(buildSimpleSearchQuery(keywords.searchKeywords(), keywords.booleanQuery(), keywords.radius(), searchType))
                 .withHighlightQuery(new HighlightQuery(new Highlight(params, highlightFields), SecurityIncidentReportIndex.class));
 
         return runQuery(searchQueryBuilder.build());
     }
 
-    private Query buildSimpleSearchQuery(List<String> tokens, String booleanQuery, String typeOfSearch){
+    private Query buildSimpleSearchQuery(List<String> tokens, String booleanQuery, Integer radius, String typeOfSearch){
         String trimmed = booleanQuery != null ? booleanQuery.trim() : "";
         boolean hasRaw = !trimmed.isBlank();
         boolean hasTokens = tokens != null && !tokens.isEmpty();
@@ -194,5 +212,101 @@ public class DocumentSearchServiceImpl implements DocumentSearchService {
                 affectedOrganizationAddress,
                 reportContent
         );
+    }
+
+    public List<SecurityIncidentReportResponse> geoSearch(List<String> keywords, int radiusMeters) {
+        final String location = String.join(" ", keywords);
+        System.out.println("[geoSearch] location=\"{}\"" + location);
+
+        try {
+            double[] geoPoint = geocodingService.getCoordinates(location);
+            double srcLat = geoPoint[0];
+            double srcLon = geoPoint[1];
+            System.out.println("[geoSearch] Start coordinates lat=" + srcLat + " lon=" + srcLon);
+
+            NativeQuery query = NativeQuery.builder()
+                    .withQuery(Query.of(q -> q.matchAll(m -> m)))
+                    .withMaxResults(1000)
+                    .build();
+
+            var searchHits = elasticsearchOperations.search(query, SecurityIncidentReportIndex.class,
+                    IndexCoordinates.of("security_incident_report_index"));
+            System.out.println("search hits: " + searchHits.getSearchHits().size());
+
+            List<SecurityIncidentReportResponse> dtos = new ArrayList<>();
+
+            for (var hit : searchHits) {
+                SecurityIncidentReportIndex incident = hit.getContent();
+
+                try {
+                    String[] latLon = incident.getLocation().split(",");
+                    double dstLat = Double.parseDouble(latLon[0].trim());
+                    double dstLon = Double.parseDouble(latLon[1].trim());
+                    System.out.println("indeks neki, koordinate: " + dstLat + ", " + dstLon);
+
+                    double distanceMeters = getNetworkDistanceMeters(srcLat, srcLon, dstLat, dstLon);
+                    System.out.println("distanca u metrima za taj neki indeks: " + distanceMeters);
+                    if (distanceMeters <= radiusMeters) {
+                        Optional<SecurityIncidentReport> incidentReportOpt =
+                                securityIncidentReportRepository.findById(Integer.valueOf(incident.getDatabaseId()));
+
+                        if (incidentReportOpt.isPresent()) {
+                            SecurityIncidentReport reportEntity = incidentReportOpt.get();
+                            SecurityIncidentReportResponse dto = SecurityIncidentReportResponse.builder()
+                                    .withEmployeeName(incident.getEmployeeName())
+                                    .withSecurityOrganizationName(incident.getSecurityOrganizationName())
+                                    .withAffectedOrganizationName(incident.getAffectedOrganizationName())
+                                    .withSeverityLevel(SeverityLevel.valueOf(incident.getSeverity()))
+                                    .withAffectedOrganizationAddress("<em class=\"highlight\">" + reportEntity.getAffectedOrganizationAddress() + "</em>")
+                                    .withReportContent(incident.getContent())
+                                    .build();
+                            dtos.add(dto);
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error("[geoSearch] Error processing doc {}: {}", incident.getDatabaseId(), e.getMessage());
+                }
+            }
+
+            log.info("[geoSearch] Matched {} documents within {} meters", dtos.size(), radiusMeters);
+            return dtos;
+
+        } catch (Exception e) {
+            log.error("[geoSearch] ERROR: {}", e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
+    private double getNetworkDistanceMeters(double srcLat, double srcLon, double dstLat, double dstLon) throws Exception {
+        String url = String.format(
+                "https://api.openrouteservice.org/v2/directions/%s?api_key=%s&start=%f,%f&end=%f,%f",
+                ORS_PROFILE, orsApiKey, srcLon, srcLat, dstLon, dstLat
+        );
+
+        HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(15))
+                .build();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Accept", "application/geo+json, application/json")
+                .timeout(Duration.ofSeconds(20))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new RuntimeException("ORS directions failed: HTTP " + response.statusCode());
+        }
+
+        JSONObject json = new JSONObject(response.body());
+        double distance = json.getJSONArray("features")
+                .getJSONObject(0)
+                .getJSONObject("properties")
+                .getJSONArray("segments")
+                .getJSONObject(0)
+                .getDouble("distance");
+
+        return distance;
     }
 }

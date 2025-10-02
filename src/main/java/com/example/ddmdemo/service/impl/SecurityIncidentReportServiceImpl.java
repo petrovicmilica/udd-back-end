@@ -8,6 +8,7 @@ import com.example.ddmdemo.model.SecurityIncidentReport;
 import com.example.ddmdemo.model.enums.SeverityLevel;
 import com.example.ddmdemo.modelIndex.SecurityIncidentReportIndex;
 import com.example.ddmdemo.respository.SecurityIncidentReportRepository;
+import com.example.ddmdemo.service.interfaces.GeocodingService;
 import com.example.ddmdemo.service.interfaces.SecurityIncidentReportService;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
@@ -32,6 +33,7 @@ public class SecurityIncidentReportServiceImpl implements SecurityIncidentReport
     private final SecurityIncidentReportRepository securityIncidentReportRepository;
     private final SecurityIncidentReportIndexRepository securityIncidentReportIndexRepository;
     private final MinioClient minioClient;
+    private final GeocodingService geocodingService;
 
     @Override
     public SecurityIncidentReportResponse parsePdf(MultipartFile file) {
@@ -91,6 +93,11 @@ public class SecurityIncidentReportServiceImpl implements SecurityIncidentReport
             index.setSeverity(saved.getSeverityLevel().toString());
             index.setDatabaseId(saved.getId().toString());
             index.setContent(saved.getReportContent() != null ? saved.getReportContent() : "");
+            double[] coords = geocodingService.getCoordinates(saved.getAffectedOrganizationAddress());
+            String geoPoint = coords[0] + "," + coords[1];
+            System.out.println("Geolokacija indeksa: " + coords[0] + ", " + coords[1]);
+            index.setLocation(geoPoint);
+
             securityIncidentReportIndexRepository.save(index);
 
             logToFile(saved, saved.getReportContent());
